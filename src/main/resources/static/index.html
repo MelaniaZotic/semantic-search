@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+    <meta charset="UTF-8">
+    <title>Semantic Search</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; background: #f0f2f5; min-height: 100vh; }
+        .header { background: #1a1a2e; color: white; padding: 24px; text-align: center; }
+        .header h1 { font-size: 28px; margin-bottom: 6px; }
+        .header p { color: #aaa; font-size: 14px; }
+        .container { max-width: 800px; margin: 40px auto; padding: 0 20px; }
+        .search-box { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; }
+        .search-box h2 { margin-bottom: 16px; color: #1a1a2e; }
+        .row { display: flex; gap: 12px; }
+        input[type=text] { flex: 1; padding: 12px 16px; border: 1.5px solid #ddd; border-radius: 8px; font-size: 15px; outline: none; }
+        input[type=text]:focus { border-color: #4361ee; }
+        button { padding: 12px 24px; background: #4361ee; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; }
+        button:hover { background: #3451d1; }
+        .upload-box { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 24px; }
+        .upload-box h2 { margin-bottom: 16px; color: #1a1a2e; }
+        input[type=file] { margin-bottom: 12px; }
+        .results { display: flex; flex-direction: column; gap: 12px; }
+        .result-card { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); border-left: 4px solid #4361ee; }
+        .result-title { font-size: 16px; font-weight: 600; color: #1a1a2e; margin-bottom: 8px; }
+        .result-content { font-size: 14px; color: #555; margin-bottom: 10px; line-height: 1.5; max-height: 80px; overflow: hidden; }
+        .score-bar-bg { background: #eee; border-radius: 4px; height: 6px; margin-bottom: 4px; }
+        .score-bar { height: 6px; border-radius: 4px; background: #4361ee; }
+        .score-label { font-size: 12px; color: #888; }
+        .message { background: #e8f4fd; border-radius: 8px; padding: 12px 16px; color: #1a6fa8; margin-top: 12px; }
+        .empty { text-align: center; color: #aaa; padding: 40px; }
+    </style>
+</head>
+<body>
+<div class="header">
+    <h1>🔍 Semantic Search</h1>
+    <p>Caută prin documente după înțeles, nu după cuvinte exacte · Oracle AI Vector Search</p>
+</div>
+
+<div class="container">
+    <!-- Upload PDF -->
+    <div class="upload-box">
+        <h2>📄 Adaugă document PDF</h2>
+        <input type="file" id="pdfFile" accept=".pdf">
+        <br>
+        <button onclick="uploadPdf()">Încarcă PDF</button>
+        <div id="uploadMsg"></div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-box">
+        <h2>🔎 Caută semantic</h2>
+        <div class="row">
+            <input type="text" id="queryInput" placeholder="ex: eroare la autentificare, recursivitate, baze de date..." onkeydown="if(event.key==='Enter') search()">
+            <button onclick="search()">Caută</button>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div class="results" id="results">
+        <div class="empty">Introduceți un query pentru a căuta...</div>
+    </div>
+</div>
+
+<script>
+    async function search() {
+        const query = document.getElementById('queryInput').value.trim();
+        if (!query) return;
+        document.getElementById('results').innerHTML = '<div class="empty">Se caută...</div>';
+        const res = await fetch(`/search?query=${encodeURIComponent(query)}&topK=5`);
+        const data = await res.json();
+        if (!data.length) {
+            document.getElementById('results').innerHTML = '<div class="empty">Niciun rezultat găsit.</div>';
+            return;
+        }
+        const minScore = Math.min(...data.map(d => d.score));
+        const maxScore = Math.max(...data.map(d => d.score));
+        document.getElementById('results').innerHTML = data.map((d, i) => {
+            const relevance = Math.round((1 - (d.score - minScore) / (maxScore - minScore + 0.001)) * 100);
+            return `
+                <div class="result-card">
+                    <div class="result-title">#${i+1} · ${d.titlu}</div>
+                    <div class="result-content">${d.continut.substring(0, 200)}...</div>
+                    <div class="score-bar-bg"><div class="score-bar" style="width:${relevance}%"></div></div>
+                    <div class="score-label">Similaritate: ${relevance}% · distanță cosinus: ${d.score.toFixed(4)}</div>
+                </div>`;
+        }).join('');
+    }
+
+    async function uploadPdf() {
+        const file = document.getElementById('pdfFile').files[0];
+        if (!file) { alert('Selectează un fișier PDF!'); return; }
+        document.getElementById('uploadMsg').innerHTML = '<div class="message">Se încarcă...</div>';
+        const formData = new FormData();
+        formData.append('file', file);
+        const res = await fetch('/upload-pdf', { method: 'POST', body: formData });
+        const text = await res.text();
+        document.getElementById('uploadMsg').innerHTML = `<div class="message">${text}</div>`;
+    }
+</script>
+</body>
+</html>

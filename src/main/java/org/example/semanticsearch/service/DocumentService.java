@@ -1,4 +1,4 @@
-package org.example.semanticsearch;
+package org.example.semanticsearch.service;
 
 import org.springframework.stereotype.Service;
 

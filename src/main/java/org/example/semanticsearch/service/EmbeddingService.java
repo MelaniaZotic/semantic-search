@@ -1,4 +1,4 @@
-package org.example.semanticsearch;
+package org.example.semanticsearch.service;
 
 import ai.djl.huggingface.tokenizers.Encoding;
 import ai.djl.huggingface.tokenizers.HuggingFaceTokenizer;
