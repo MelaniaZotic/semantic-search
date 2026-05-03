@@ -91,13 +91,13 @@ String sqlQuery = """
 ## 5. Capturi de Ecran și Execuție
 
 ### 5.1. Pornirea Infrastructurii Docker
-Fig 1: Containerul Oracle 23ai rulând cu succes și expunând portul 1522.
+![Rulare Docker Oracle](Căutare_Semantică.png): Containerul Oracle 23ai rulând cu succes și expunând portul 1522.
 
 ### 5.2. Testarea API-ului - Ingestie PDF
-Fig 2: Endpoint-ul POST /api/documents/upload, care extrage și vectorizează textul din PDF.
+![Upload PDF](Docker.png): Endpoint-ul POST /api/documents/upload, care extrage și vectorizează textul din PDF.
 
 ### 5.3. Testarea API-ului - Căutare Semantică
-Fig 3: Răspunsul primit în urma unei interogări în limbaj natural. Sistemul returnează cele mai relevante paragrafe.
+![Rezultate Search](Ingestie_PDF.png): Răspunsul primit în urma unei interogări în limbaj natural. Sistemul returnează cele mai relevante paragrafe.
 
 ## 6. Interpretarea Rezultatelor
 În urma testării sistemului pe diverse seturi de documente, am observat următoarele:
